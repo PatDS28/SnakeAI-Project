@@ -23,7 +23,7 @@ BLUE2 = (0, 100, 255)
 BLACK = (0,0,0)
 
 BLOCK_SIZE = 20
-SPEED = 20
+SPEED = 10
 
 class SnakeGame:
     
@@ -53,7 +53,7 @@ class SnakeGame:
         self.food = Point(x, y)
         if self.food in self.snake:
             self._place_food()
-        
+
     def play_step(self):
         # 1. collect user input
         for event in pygame.event.get():
@@ -61,32 +61,32 @@ class SnakeGame:
                 pygame.quit()
                 quit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
+                if event.key == pygame.K_LEFT and self.direction != Direction.RIGHT:
                     self.direction = Direction.LEFT
-                elif event.key == pygame.K_RIGHT:
+                elif event.key == pygame.K_RIGHT and self.direction != Direction.LEFT:
                     self.direction = Direction.RIGHT
-                elif event.key == pygame.K_UP:
+                elif event.key == pygame.K_UP and self.direction != Direction.DOWN:
                     self.direction = Direction.UP
-                elif event.key == pygame.K_DOWN:
+                elif event.key == pygame.K_DOWN and self.direction != Direction.UP:
                     self.direction = Direction.DOWN
-        
+
         # 2. move
-        self._move(self.direction) # update the head
+        self._move(self.direction)  # update the head
         self.snake.insert(0, self.head)
-        
+
         # 3. check if game over
         game_over = False
         if self._is_collision():
             game_over = True
             return game_over, self.score
-            
+
         # 4. place new food or just move
         if self.head == self.food:
             self.score += 1
             self._place_food()
         else:
             self.snake.pop()
-        
+
         # 5. update ui and clock
         self._update_ui()
         self.clock.tick(SPEED)
