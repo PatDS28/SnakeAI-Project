@@ -1,15 +1,14 @@
+import time
+
 import torch
 import random
 import numpy as np
 from collections import deque
-from game import SnakeGameAI, Direction, Point
+from snakeGame import SnakeGameAI, Direction, Point
 from model import Linear_QNet, QTrainer
-
 import pygame
-import random
-from enum import Enum
-from collections import namedtuple
 
+font = pygame.font.Font('arial.ttf', 25)
 
 
 MAX_MEMORY = 100_000
@@ -90,35 +89,79 @@ class Agent:
         return final_move
 
 def train():
-
     agent = Agent()
-
     agent.model.load()
-
     game = SnakeGameAI()
-    while True:
-        # get old state
-        state_old = agent.get_state(game)
+    running = True
+    while running:
+        if game.player_dead:
+            # Draw death text and keep the game window open
+            game.draw_death_text()
+            break  # Exit the loop when the player is dead
+        else:
+            # get old state
+            state_old = agent.get_state(game)
+            # get move
+            final_move = agent.get_action(state_old)
+            # perform move and get new state
+            game.play_step(final_move)
+            state_new = agent.get_state(game)
 
-        # get move
-        final_move = agent.get_action(state_old)
 
-        # perform move and get new state
-        done, score = game.play_step(final_move)
-        state_new = agent.get_state(game)
+    game.draw_death_text()
 
-        if done == "aidead":
-            game.pause_game()
-            # train long memory, plot result
-            # if(game.ai_dead == True):
-                # game.display.fill((0,0,0))
-                # game.reset()
-            # agent.n_games += 1
-            # break
+
+
 
 
 
 
 
 if __name__ == '__main__':
-    train()
+    agent = Agent()
+    agent.model.load()
+    game = SnakeGameAI()
+    running = True
+
+
+    while running:
+        if game.pause:
+            game.unpause()
+        try:
+            if not game.pause:
+                # get old state
+                state_old = agent.get_state(game)
+                # get move
+                final_move = agent.get_action(state_old)
+                # perform move and get new state
+                game.play_step(final_move)
+                state_new = agent.get_state(game)
+        except Exception as e:
+            game.pause = True
+            game.draw_death_text()
+
+            print(e)
+
+
+
+        # if game.player_dead:
+        #     # Draw death text and keep the game window open
+        #     # game.update_ui()
+        #     pause = True
+        #     game.display.fill((0,0,0))
+        #     game.draw_death_text()
+        #     # print("asd")
+        #     # time.sleep(50)
+        #     # break  # Exit the loop when the player is dead
+        # else:
+        #     if (pause == False):
+        #         # get old state
+        #         state_old = agent.get_state(game)
+        #         # get move
+        #         final_move = agent.get_action(state_old)
+        #         # perform move and get new state
+        #         game.play_step(final_move)
+        #         state_new = agent.get_state(game)
+
+
+

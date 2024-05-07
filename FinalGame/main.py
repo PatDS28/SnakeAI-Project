@@ -1,14 +1,11 @@
+import button
 import torch
-import random
 import numpy as np
 from collections import deque
 from game import SnakeGameAI, Direction, Point
 from model import Linear_QNet, QTrainer
 
 import pygame
-import random
-from enum import Enum
-from collections import namedtuple
 
 
 
@@ -104,21 +101,50 @@ def train():
         final_move = agent.get_action(state_old)
 
         # perform move and get new state
-        done, score = game.play_step(final_move)
+        reward, done, score = game.play_step(final_move)
         state_new = agent.get_state(game)
 
-        if done == "aidead":
+        if done:
             game.pause_game()
             # train long memory, plot result
-            # if(game.ai_dead == True):
-                # game.display.fill((0,0,0))
-                # game.reset()
+            # game.reset()
             # agent.n_games += 1
             # break
 
+def menu():
+    # load button images
+    start_img = pygame.image.load('assets/start_btn.png').convert_alpha()
+    exit_img = pygame.image.load('assets/exit_btn.png').convert_alpha()
+
+    # create button instances
+    start_button = button.Button(100, 200, start_img, 0.5)
+    exit_button = button.Button(300, 200, exit_img, 0.5)
+
+    screen.fill((202, 228, 241))
+
+    if start_button.draw(screen):
+        train()
+    if exit_button.draw(screen):
+        print('EXIT')
+
+#create display window
+SCREEN_HEIGHT = 480
+SCREEN_WIDTH = 640
+
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption('Button Demo')
 
 
 
+#game loop
+run = True
+while run:
+    menu()
+    for event in pygame.event.get():
+        # quit game
+        if event.type == pygame.QUIT:
+            run = False
 
-if __name__ == '__main__':
-    train()
+    pygame.display.update()
+
+pygame.quit()

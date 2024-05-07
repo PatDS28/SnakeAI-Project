@@ -29,12 +29,11 @@ PINK = (255, 192, 203)
 
 BLOCK_SIZE = 20
 SPEED = 10
-PLAYER_SPEED = 10
+PLAYER_SPEED = 8
 
 class SnakeGameAI:
 
     def __init__(self, w=640, h=480):
-
         self.w = w
         self.h = h
         # init display
@@ -45,7 +44,6 @@ class SnakeGameAI:
         self.clock = pygame.time.Clock()
         self.clock_player = pygame.time.Clock()
 
-        self.ai_dead = False
         self.speed = 10
         self.speed_player = 10
 
@@ -53,10 +51,11 @@ class SnakeGameAI:
         self.reset()
         # self.player()
 
+
+
+
     def reset(self):
         # init game state
-        self.ai_dead = False
-        self.speed_player = 30
         self.direction = Direction.RIGHT
 
         self.head = Point(self.w/2, self.h/2)
@@ -67,6 +66,7 @@ class SnakeGameAI:
         self.score = 0
         self.food = None
         self._place_food()
+        self.frame_iteration = 0
 
         self.direction1 = Direction.RIGHT
 
@@ -79,8 +79,6 @@ class SnakeGameAI:
         self.food_player = None
         self._place_food_player()
         self.frame_iteration = 0
-        self.frame_iteration_player = 0
-
 
     # def player(self):
     #     # init game state
@@ -104,25 +102,6 @@ class SnakeGameAI:
         if self.food in self.snake:
             self._place_food()
 
-    def pause_game(self):
-        paused = True
-        while paused:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    quit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:  # Press spacebar to resume
-                        paused = False
-                text = font.render("asdads: " , True, WHITE)
-
-                self.display.blit(text, [250, 400])
-
-
-            pygame.display.update()
-            self.clock.tick(1)  # Adjust the frame rate while paused
-
-
     def _place_food_player(self):
         x = random.randint(0, (self.w-BLOCK_SIZE )//BLOCK_SIZE )*BLOCK_SIZE
         y = random.randint(0, (self.h-BLOCK_SIZE )//BLOCK_SIZE )*BLOCK_SIZE
@@ -133,7 +112,6 @@ class SnakeGameAI:
 
     def play_step(self, action):
         self.frame_iteration += 1
-        self.frame_iteration_player += 1
         # 1. collect user input
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -159,27 +137,31 @@ class SnakeGameAI:
 
 
         # 3. check if game over
+        reward = 0
         game_over = False
-        if self.is_collision() or self.frame_iteration > 100*len(self.snake):
-            print("sadad")
+        if self.is_collision() or self.frame_iteration > 100*len(self.snake) or self.is_collision_player():
             game_over = True
-            return "aidead", self.score
+            reward = -10
+            # self.display.fill((202, 228, 241))
+            return reward, game_over, self.score
 
-        if self.is_collision_player():
-            game_over = True
-            # reward = -10
-            return "playerdead", self.score
+
+        # if self.is_collision_player():
+        #     game_over = True
+        #     # reward = -10
+        #     # return reward, game_over, self.score
 
 
         # 4. place new food or just move
         if self.head == self.food:
             self.score += 1
+            reward = 10
             self._place_food()
         else:
             self.snake.pop()
 
         if self.head_player == self.food_player:
-            # self.speed_player +=1
+            self.speed_player +=1
             self.score_player += 1
             self._place_food_player()
         else:
@@ -190,7 +172,7 @@ class SnakeGameAI:
         self.clock.tick(self.speed_player)
         # self.clock_player.tick(self.speed_player)
         # 6. return game over and score
-        return game_over, self.score
+        return reward, game_over, self.score
 
 
     def is_collision(self, pt=None):
@@ -284,13 +266,37 @@ class SnakeGameAI:
 
         self.head_player = Point(x, y)
 
-
-
-
-
-
-
-
+    # def pause_game(self):
+    #     paused = True
+    #     while paused:
+    #         for event in pygame.event.get():
+    #             if event.type == pygame.QUIT:
+    #                 pygame.quit()
+    #                 quit()
+    #             if event.type == pygame.KEYDOWN:
+    #                 if event.key == pygame.K_SPACE:
+    #                     paused = False
+    #
+    #         # Display "Paused" message
+    #         text = font.render("Paused", True, WHITE)
+    #         self.display.blit(text, [self.w // 2 - 50, self.h // 2 - 25])
+    #
+    #         # Add buttons
+    #         button_font = pygame.font.Font('arial.ttf', 20)
+    #         resume_text = button_font.render("Resume", True, WHITE)
+    #         quit_text = button_font.render("Quit", True, WHITE)
+    #
+    #         resume_button_rect = resume_text.get_rect(center=(self.w // 2, self.h // 2 + 25))
+    #         quit_button_rect = quit_text.get_rect(center=(self.w // 2, self.h // 2 + 75))
+    #
+    #         pygame.draw.rect(self.display, GREEN1, resume_button_rect)
+    #         pygame.draw.rect(self.display, GREEN1, quit_button_rect)
+    #
+    #         self.display.blit(resume_text, resume_button_rect)
+    #         self.display.blit(quit_text, quit_button_rect)
+    #
+    #         pygame.display.update()
+    #         self.clock.tick(5)  # Adjust the frame rate
 
 
 
