@@ -112,56 +112,130 @@ def train():
 
 
 
+import pygame
+import button
+
+pygame.init()
+
+screen_width = 640
+screen_height = 480
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("Snake Game")
+
+
+font = pygame.font.SysFont("arialblack", 30)
+text_col = (255,255,255)
 
 
 
+# button images
+img = pygame.image.load("assets/start_btn.png").convert_alpha()
+img1 = pygame.image.load("assets/start_btn.png").convert_alpha()
+img2 = pygame.image.load("assets/start_btn.png").convert_alpha()
 
+img_button = button.Button(260,125, img, 0.5)
+img_button1 = button.Button(260,225, img1, 0.5)
+img_button2 = button.Button(260,325, img2, 0.5)
+
+def draw_text(text,font,text_col, x, y):
+    img = font.render(text, True, text_col)
+    screen.blit(img, (x,y))
+
+
+# game variables
+start_key = False
+menu_state = "main"
+try_state = "123"
 
 if __name__ == '__main__':
     agent = Agent()
     agent.model.load()
     game = SnakeGameAI()
+
+    run = True
     running = True
+    while run:
+
+        screen.fill((52, 78, 91))
+        if start_key == True:
+            if menu_state == "main":
+                # print(try_state)
+
+                if img_button.draw(screen):
+                    menu_state = "start"
+                if img_button1.draw(screen):
+                    pass
+                if img_button2.draw(screen):
+                    pass
+            elif menu_state == "start":
+                # if (running == False and try_state != "menuback"):
+                #     running = True
+
+                running = True
+                while running:
+
+                    if try_state == "menubackyu":
+                        menu_state = "main"
+                        # try_state = " "
+                        game.pause = False
+                        try_state = ""
+                        # print("here")
+                        game.reset()
+                        break
 
 
-    while running:
-        if game.pause:
-            game.unpause()
-        try:
-            if not game.pause:
-                # get old state
-                state_old = agent.get_state(game)
-                # get move
-                final_move = agent.get_action(state_old)
-                # perform move and get new state
-                game.play_step(final_move)
-                state_new = agent.get_state(game)
-        except Exception as e:
-            game.pause = True
-            game.draw_death_text()
+                    if game.pause:
+                        game.unpause()
+                        try_state = game.back
 
-            print(e)
+                    try:
+                        if not game.pause:
+                            # get old state
+                            state_old = agent.get_state(game)
+                            # get move
+                            final_move = agent.get_action(state_old)
+                            # perform move and get new state
+                            game.play_step(final_move)
+                            state_new = agent.get_state(game)
+                    except Exception as e:
 
+                        game.pause = True
+                        game.draw_death_text()
+                        try_state = game.back
+                        print(e)
 
+        else:
+            draw_text("Press Space to pause", font, text_col, 150, 350)
 
-        # if game.player_dead:
-        #     # Draw death text and keep the game window open
-        #     # game.update_ui()
-        #     pause = True
-        #     game.display.fill((0,0,0))
-        #     game.draw_death_text()
-        #     # print("asd")
-        #     # time.sleep(50)
-        #     # break  # Exit the loop when the player is dead
-        # else:
-        #     if (pause == False):
-        #         # get old state
-        #         state_old = agent.get_state(game)
-        #         # get move
-        #         final_move = agent.get_action(state_old)
-        #         # perform move and get new state
-        #         game.play_step(final_move)
-        #         state_new = agent.get_state(game)
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    start_key = True
+            if event.type == pygame.QUIT:
+                run = False
+        pygame.display.update()
+
+    pygame.quit()
 
 
 
+
+
+# running = True
+#
+# while running:
+#     if game.pause:
+#         game.unpause()
+#
+#     try:
+#         if not game.pause:
+#             # get old state
+#             state_old = agent.get_state(game)
+#             # get move
+#             final_move = agent.get_action(state_old)
+#             # perform move and get new state
+#             game.play_step(final_move)
+#             state_new = agent.get_state(game)
+#     except Exception as e:
+#         game.pause = True
+#         game.draw_death_text()

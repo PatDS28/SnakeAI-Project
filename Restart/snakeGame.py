@@ -31,7 +31,7 @@ PINK = (255, 192, 203)
 
 
 BLOCK_SIZE = 20
-SPEED = 30
+SPEED = 10
 
 
 class SnakeGameAI:
@@ -40,6 +40,7 @@ class SnakeGameAI:
         self.ai_dead = False
         self.player_dead = False
         self.pause = False
+
 
         self.w = w
         self.h = h
@@ -75,7 +76,10 @@ class SnakeGameAI:
         self._place_food_player()
         self.frame_iteration = 0
         self.frame_iteration_player = 0
-        self.pause = False
+        # self.pause = False
+        self.ai_dead = False
+        self.player_dead = False
+        self.back = "main"
 
     def _place_food(self):
         x = random.randint(0, (self.w - BLOCK_SIZE) // BLOCK_SIZE) * BLOCK_SIZE
@@ -219,10 +223,12 @@ class SnakeGameAI:
     def is_collision_player(self):
         # hits boundary
         if self.head_player.x > self.w - BLOCK_SIZE or self.head_player.x < 0 or self.head_player.y > self.h - BLOCK_SIZE or self.head_player.y < 0:
-            raise "Game Over"
+            print("collided")
+            raise GameOverException("The game is over")
         # hits itself
         if self.head_player in self.snake_player[1:]:
-            raise "Game Over"
+            print("collided")
+            raise GameOverException("The game is over")
         return False
 
     def move_player(self, direction):
@@ -328,6 +334,9 @@ class SnakeGameAI:
                 if event.key == pygame.K_SPACE:
                     self.reset()
                     self.pause = False
+                elif event.key == pygame.K_BACKSPACE:
+                    self.back = "menubackyu"
+                    # self.pause = False
 
     def update_ui_player(self):
         self.display.fill(BLACK)
@@ -343,14 +352,24 @@ class SnakeGameAI:
 
         pygame.draw.rect(self.display, PINK, pygame.Rect(self.food_player.x, self.food_player.y, BLOCK_SIZE, BLOCK_SIZE))
 
+        if (self.score > self.score_player):
+            text = font.render("Score: " + str(self.score), True, WHITE)
+            text1 = font.render("Score: " + str(self.score_player), True, WHITE)
+            text2 = font.render("The AI is dead, beat its score", True, WHITE)
 
-        text = font.render("Score: " + str(self.score), True, WHITE)
-        text1 = font.render("Score: " + str(self.score_player), True, WHITE)
-        text2 = font.render("You already beat the AI! ", True, WHITE)
+            self.display.blit(text, [0, 0])
+            self.display.blit(text1, [300, 0])
+            self.display.blit(text2, [120, 450])
+            pygame.display.flip()
+        else:
+            text = font.render("Score: " + str(self.score), True, WHITE)
+            text1 = font.render("Score: " + str(self.score_player), True, WHITE)
+            text2 = font.render("You already beat the AI", True, WHITE)
 
-        self.display.blit(text, [0, 0])
-        self.display.blit(text1, [300, 0])
-        self.display.blit(text2, [300, 400])
-        pygame.display.flip()
+            self.display.blit(text, [0, 0])
+            self.display.blit(text1, [300, 0])
+            self.display.blit(text2, [120, 450])
+            pygame.display.flip()
 
-
+class GameOverException(Exception):
+    pass
